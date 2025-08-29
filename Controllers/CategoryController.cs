@@ -8,23 +8,24 @@ namespace LibraryManagementAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // 🔒 يتطلب تسجيل الدخول
     public class CategoryController : ControllerBase
     {
-        private readonly ICategoryRepo _categoryRepo;
+        private readonly IWorkRepo<Category> _categoryRepo;
 
-        public CategoryController(ICategoryRepo categoryRepo)
+        public CategoryController(IWorkRepo<Category> categoryRepo)
         {
             _categoryRepo = categoryRepo;
         }
-        [Authorize(Roles = "Admin , User")]
-        // ✅ Get all categories with pagination + sorting
+
+        // ✅ GET: api/category?pageNumber=1&pageSize=10&sortBy=Name&sortOrder=asc
+        [Authorize(Roles = "Admin,User")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryResponseDto>>> GetAll(
+        public async Task<IActionResult> GetAll(
             int pageNumber = 1, int pageSize = 10,
             string sortBy = "id", string sortOrder = "asc")
         {
-            var categories = await _categoryRepo.GetAllAsync(pageNumber, pageSize, sortBy, sortOrder);
+            var categories = await _categoryRepo.GetAllAsync();
+
 
             var result = categories.Select(c => new CategoryResponseDto
             {
@@ -36,13 +37,14 @@ namespace LibraryManagementAPI.Controllers
             return Ok(result);
         }
 
-        // ✅ Get category by Id (with books)
-        [Authorize(Roles = "Admin , User")]
+        
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<CategoryWithBooksDto>> GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             var category = await _categoryRepo.GetByIdAsync(id);
-            if (category == null) return NotFound();
+            if (category == null)
+                return NotFound(new { Message = $"Category with Id = {id} not found." });
 
             var result = new CategoryWithBooksDto
             {
@@ -61,11 +63,13 @@ namespace LibraryManagementAPI.Controllers
             return Ok(result);
         }
 
-        // ✅ Add new category
+        
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult<CategoryResponseDto>> Create(CategoryRequestDto dto)
+        public async Task<IActionResult> Create([FromBody] CategoryRequestDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var category = new Category
             {
                 Name = dto.Name,
@@ -84,20 +88,21 @@ namespace LibraryManagementAPI.Controllers
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, result);
         }
 
-        // ✅ Update category
+       
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<ActionResult<CategoryResponseDto>> Update(int id, CategoryRequestDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] CategoryRequestDto dto)
         {
-            var category = new Category
-            {
-                Id = id,
-                Name = dto.Name,
-                Description = dto.Description
-            };
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var updated = await _categoryRepo.UpdateAsync(category);
-            if (updated == null) return NotFound();
+            var category = await _categoryRepo.GetByIdAsync(id);
+            if (category == null)
+                return NotFound(new { Message = $"Category with Id = {id} not found." });
+
+            category.Name = dto.Name;
+            category.Description = dto.Description;
+
+            var updated = await _categoryRepo.UpdateAsync(category,id);
 
             var result = new CategoryResponseDto
             {
@@ -108,14 +113,16 @@ namespace LibraryManagementAPI.Controllers
 
             return Ok(result);
         }
+
         [Authorize(Roles = "Admin")]
-        // ✅ Delete category
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var success = await _categoryRepo.DeleteAsync(id);
-            if (!success) return NotFound();
+            var author = await _categoryRepo.GetByIdAsync(id);
+            if (author == null)
+                return NotFound(new { Message = $"Author with Id = {id} not found." });
 
+            await _categoryRepo.DeleteAsync(author, id);
             return NoContent();
         }
     }

@@ -6,6 +6,7 @@ D:\Repo\LibraryManagementAPI\LibraryManagementAPI\obj\Debug\net9.0\LibraryManage
 D:\Repo\LibraryManagementAPI\LibraryManagementAPI\obj\Debug\net9.0\LibraryManagementAPI.csproj.CoreCompileInputs.cache
 D:\Repo\LibraryManagementAPI\LibraryManagementAPI\obj\Debug\net9.0\LibraryManagementAPI.MvcApplicationPartsAssemblyInfo.cs
 D:\Repo\LibraryManagementAPI\LibraryManagementAPI\obj\Debug\net9.0\LibraryManagementAPI.MvcApplicationPartsAssemblyInfo.cache
+D:\Repo\LibraryManagementAPI\LibraryManagementAPI\obj\Debug\net9.0\LibraryManagementAPI.sourcelink.json
 D:\Repo\LibraryManagementAPI\LibraryManagementAPI\bin\Debug\net9.0\appsettings.Development.json
 D:\Repo\LibraryManagementAPI\LibraryManagementAPI\bin\Debug\net9.0\appsettings.json
 D:\Repo\LibraryManagementAPI\LibraryManagementAPI\bin\Debug\net9.0\LibraryManagementAPI.staticwebassets.endpoints.json

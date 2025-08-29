@@ -2,7 +2,7 @@
   {
     "ContainingType": "LibraryManagementAPI.Controllers.AccountController",
     "Method": "ChangePassword",
-    "RelativePath": "api/Account/change-password",
+    "RelativePath": "api/Account/ChangePassword",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -34,7 +34,7 @@
   {
     "ContainingType": "LibraryManagementAPI.Controllers.AccountController",
     "Method": "Login",
-    "RelativePath": "api/Account/login",
+    "RelativePath": "api/Account/Login",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -50,7 +50,7 @@
   {
     "ContainingType": "LibraryManagementAPI.Controllers.AccountController",
     "Method": "Register",
-    "RelativePath": "api/Account/register",
+    "RelativePath": "api/Account/Register",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -87,17 +87,7 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[LibraryManagementAPI.Dto.Author.AuthorResponseDto, LibraryManagementAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.AuthorController",
@@ -108,22 +98,12 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dto",
+        "Name": "model",
         "Type": "LibraryManagementAPI.Dto.Author.AuthorRequestDto",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "LibraryManagementAPI.Dto.Author.AuthorResponseDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.AuthorController",
@@ -139,17 +119,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "LibraryManagementAPI.Dto.Author.AuthorWithBooksDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.AuthorController",
@@ -190,45 +160,24 @@
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.BookController",
-    "Method": "GetBooks",
+    "Method": "GetAll",
     "RelativePath": "api/Book",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "pageNumber",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "sortBy",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "sortOrder",
-        "Type": "System.String",
-        "IsRequired": false
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.BookController",
-    "Method": "AddBook",
+    "Method": "Create",
     "RelativePath": "api/Book",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dto",
+        "Name": "model",
         "Type": "LibraryManagementAPI.Dto.Books.BookRequestDto",
         "IsRequired": true
       }
@@ -237,7 +186,7 @@
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.BookController",
-    "Method": "GetBook",
+    "Method": "GetById",
     "RelativePath": "api/Book/{id}",
     "HttpMethod": "GET",
     "IsController": true,
@@ -253,7 +202,7 @@
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.BookController",
-    "Method": "UpdateBook",
+    "Method": "Update",
     "RelativePath": "api/Book/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
@@ -274,7 +223,7 @@
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.BookController",
-    "Method": "DeleteBook",
+    "Method": "Delete",
     "RelativePath": "api/Book/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
@@ -375,17 +324,7 @@
         "IsRequired": false
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[LibraryManagementAPI.Dto.Category.CategoryResponseDto, LibraryManagementAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.CategoryController",
@@ -401,17 +340,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "LibraryManagementAPI.Dto.Category.CategoryResponseDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.CategoryController",
@@ -427,17 +356,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "LibraryManagementAPI.Dto.Category.CategoryWithBooksDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.CategoryController",
@@ -458,17 +377,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "LibraryManagementAPI.Dto.Category.CategoryResponseDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.CategoryController",
@@ -500,16 +409,68 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "LibraryManagementAPI.Dto.Purchases.PurchaseResponseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "LibraryManagementAPI.Controllers.PurchaseController",
-    "Method": "GetMyPurchases",
-    "RelativePath": "api/Purchase/my",
+    "Method": "GetPurchaseById",
+    "RelativePath": "api/Purchase/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LibraryManagementAPI.Dto.Purchases.PurchaseResponseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LibraryManagementAPI.Controllers.PurchaseController",
+    "Method": "GetUserPurchases",
+    "RelativePath": "api/Purchase/user/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[LibraryManagementAPI.Dto.Purchases.PurchaseResponseDto, LibraryManagementAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   }
 ]

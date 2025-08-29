@@ -9,38 +9,36 @@ namespace LibraryManagementAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // كل العمليات محتاجة Auth افتراضيًا
     public class AuthorController : ControllerBase
     {
-        private readonly IAuthorRepo _authorRepo;
+        private readonly IWorkRepo<Author> _authorRepo;
 
-        public AuthorController(IAuthorRepo authorRepo)
+        public AuthorController(IWorkRepo<Author> authorRepo)
         {
             _authorRepo = authorRepo;
         }
-        [Authorize(Roles = "Admin , User")]
-        // GET: api/Author
+
+        [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AuthorResponseDto>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             var authors = await _authorRepo.GetAllAsync();
-
             var result = authors.Select(a => new AuthorResponseDto
             {
                 Id = a.Id,
                 Name = a.Name
             });
-
             return Ok(result);
         }
 
-        // GET: api/Author/5
-        [Authorize(Roles = "Admin , User")]
+        [AllowAnonymous]
         [HttpGet("{id}")]
-        public async Task<ActionResult<AuthorWithBooksDto>> GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             var author = await _authorRepo.GetByIdAsync(id);
             if (author == null)
-                return NotFound();
+                return NotFound(new { Message = $"Author with Id = {id} not found." });
 
             var result = new AuthorWithBooksDto
             {
@@ -59,16 +57,14 @@ namespace LibraryManagementAPI.Controllers
             return Ok(result);
         }
 
-        // POST: api/Author
-        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult<AuthorResponseDto>> Create(AuthorRequestDto dto)
+        public async Task<IActionResult> Create([FromBody] AuthorRequestDto model)
         {
             var author = new Author
             {
-                Name = dto.Name,
-                Bio = dto.Bio,
-                DateOfBirth = dto.DateOfBirth
+                Name = model.Name,
+                Bio = model.Bio,
+                DateOfBirth = model.DateOfBirth,
             };
 
             var created = await _authorRepo.AddAsync(author);
@@ -82,36 +78,33 @@ namespace LibraryManagementAPI.Controllers
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, response);
         }
 
-        // PUT: api/Author/5
-        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, AuthorRequestDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] AuthorRequestDto dto)
         {
-            var author = new Author
-            {
-                Id = id,
-                Name = dto.Name,
-                Bio = dto.Bio,
-                DateOfBirth = dto.DateOfBirth
-            };
+            var author = await _authorRepo.GetByIdAsync(id);
+            if (author == null)
+                return NotFound(new { Message = $"Author with Id = {id} not found." });
 
-            var updated = await _authorRepo.UpdateAsync(author);
-            if (updated == null)
-                return NotFound();
+            author.Name = dto.Name;
+            author.Bio = dto.Bio;
+            author.DateOfBirth = dto.DateOfBirth;
 
+            await _authorRepo.UpdateAsync(author, id);
             return NoContent();
         }
 
-        // DELETE: api/Author/5
-        [Authorize(Roles = "Admin")]
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var deleted = await _authorRepo.DeleteAsync(id);
-            if (!deleted)
-                return NotFound();
+            var author = await _authorRepo.GetByIdAsync(id);
+            if (author == null)
+                return NotFound(new { Message = $"Author with Id = {id} not found." });
 
+            await _authorRepo.DeleteAsync(author, id);
             return NoContent();
         }
     }
+
 }
+

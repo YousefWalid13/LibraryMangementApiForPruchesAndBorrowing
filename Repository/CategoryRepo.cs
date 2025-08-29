@@ -1,10 +1,10 @@
 ﻿using LibraryManagementAPI.Data;
 using LibraryManagementAPI.Models;
 using Microsoft.EntityFrameworkCore;
-
+        
 namespace LibraryManagementAPI.Repository
 {
-    public class CategoryRepo : ICategoryRepo
+    public class CategoryRepo : IWorkRepo<Category>
     {
         private readonly AppDbContext _context;
 
@@ -13,34 +13,30 @@ namespace LibraryManagementAPI.Repository
             _context = appDbContext;
         }
 
-        // ✅ إضافة تصنيف جديد
         public async Task<Category?> AddAsync(Category category)
         {
-            if (category == null) return null;
-
-            try
+            if (category == null)
             {
-                await _context.Categories.AddAsync(category);
-                await _context.SaveChangesAsync();
-                return category;
+                return null; 
             }
-            catch (Exception ex)
-            {
-                throw new Exception("Error while adding a new category.", ex);
-            }
+           await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+            return category;
+            
         }
 
-        // ✅ حذف تصنيف
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<Category?> DeleteAsync(Category category ,   int id)
         {
             try
             {
-                var category = await _context.Categories.FindAsync(id);
-                if (category == null) return false;
+                 category = await _context.Categories.FindAsync(id);
+                if (category == null) { return null; }
 
                 _context.Categories.Remove(category);
+
                 await _context.SaveChangesAsync();
-                return true;
+
+                return category ?? throw new NotImplementedException();
             }
             catch (Exception ex)
             {
@@ -48,9 +44,9 @@ namespace LibraryManagementAPI.Repository
             }
         }
 
-        // ✅ إحضار كل التصنيفات مع Pagination + Sorting
-        public async Task<IEnumerable<Category>> GetAllAsync(int pageNumber, int pageSize, string? sortBy, string? sortOrder)
+        public async Task<IEnumerable<Category>> GetAllAsync()
         {
+            int pageNumber =0; int pageSize=0; string? sortBy=""; string? sortOrder="";
             if (pageNumber <= 0) pageNumber = 1;
             if (pageSize <= 0) pageSize = 10;
 
@@ -80,7 +76,7 @@ namespace LibraryManagementAPI.Repository
             }
         }
 
-        // ✅ إحضار تصنيف واحد
+
         public async Task<Category?> GetByIdAsync(int id)
         {
             try
@@ -94,29 +90,32 @@ namespace LibraryManagementAPI.Repository
             {
                 throw new Exception("Error while fetching the category.", ex);
             }
+
         }
 
-        // ✅ تحديث تصنيف
-        public async Task<Category?> UpdateAsync(Category category)
+        public async Task<Category?> GetByNameAsync(string name)
         {
-            if (category == null) return null;
-
             try
             {
-                var existingCategory = await _context.Categories.FindAsync(category.Id);
-                if (existingCategory == null) return null;
-
-                // Update fields safely
-                existingCategory.Name = category.Name;
-                existingCategory.Description = category.Description;
-
-                await _context.SaveChangesAsync();
-                return existingCategory;
+                return await _context.Categories
+                                     .Include(c => c.Books) // التصنيف ومعاه كتبه
+                                     .AsNoTracking()
+                                     .FirstOrDefaultAsync(c => c.Name == name);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error while updating the category.", ex);
+                throw new Exception("Error while fetching the category.", ex);
             }
+        }
+
+        public async Task<Category?> UpdateAsync(Category category ,int id)
+        {
+            await _context.Categories.FindAsync(id);
+            if (category == null) {return null;}
+             _context.Update(category);
+            await _context.SaveChangesAsync();
+            return category;
+            
         }
     }
 }

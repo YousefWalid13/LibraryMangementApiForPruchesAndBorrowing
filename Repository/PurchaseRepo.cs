@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repository
 {
-    public class PurchaseRepo : IPurchaseRepo
+    public class PurchaseRepo : IPurchaseRepo<Purchase>
     {
         private readonly AppDbContext _context;
 

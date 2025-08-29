@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repository
 {
-    public class AuthorRepo : IAuthorRepo
+    public class AuthorRepo : IWorkRepo<Author>
     {
         private readonly AppDbContext _context;
 
@@ -13,46 +13,66 @@ namespace LibraryManagementAPI.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<Author>> GetAllAsync()
+        public async Task<Author?> AddAsync(Author author)
         {
-            return await _context.Authors.ToListAsync();
-        }
-
-        public async Task<Author?> GetByIdAsync(int id)
-        {
-            return await _context.Authors
-                .Include(a => a.Books)
-                .FirstOrDefaultAsync(a => a.Id == id);
-        }
-
-        public async Task<Author> AddAsync(Author author)
-        {
+           
+            if (author == null)
+            {
+                return null;
+            }
             await _context.Authors.AddAsync(author);
             await _context.SaveChangesAsync();
             return author;
+            throw new NotImplementedException();
         }
 
-        public async Task<Author?> UpdateAsync(Author author)
+        public async Task<Author?> DeleteAsync(Author author,int id)
         {
-            var existing = await _context.Authors.FindAsync(author.Id);
-            if (existing == null) return null;
+            try
+            {
+                
+                await _context.Books.FindAsync(id);
+                if (author == null) { return null; }
 
-            existing.Name = author.Name;
-            existing.Bio = author.Bio;
-            existing.DateOfBirth = author.DateOfBirth;
+                _context.Authors.Remove(author);
 
-            await _context.SaveChangesAsync();
-            return existing;
+                await _context.SaveChangesAsync();
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while deleting the category.", ex);
+            }
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<IEnumerable<Author>> GetAllAsync()
         {
-            var author = await _context.Authors.FindAsync(id);
-            if (author == null) return false;
+            return await _context.Authors.ToListAsync();
 
-            _context.Authors.Remove(author);
-            await _context.SaveChangesAsync();
-            return true;
         }
+
+
+        public async Task<Author?> GetByIdAsync(int id)
+        {
+          return await _context.Authors.FindAsync(id);
+
+        }
+
+        public async Task<Author?> GetByNameAsync(string name)
+        {
+            return await _context.Authors.FindAsync(name);
+        }
+
+        public async Task<Author?> UpdateAsync(Author author , int id)
+        {
+            await _context.Authors.FindAsync(id);
+            if (author == null) { return null; }
+            _context.Update(author);
+            await _context.SaveChangesAsync();
+            return author;
+
+        }
+
     }
 }

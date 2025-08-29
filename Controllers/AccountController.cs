@@ -19,18 +19,18 @@ namespace LibraryManagementAPI.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IConfiguration _configuration;
-        public AccountController(IConfiguration configuration,UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        private readonly IConfiguration _config;
+
+        public AccountController(UserManager<ApplicationUser> userManager,  IConfiguration configuration)
         {
+            _config = configuration;
             _userManager = userManager;
-            _signInManager = signInManager;
-            _configuration = configuration;
+            
         }
 
-        // ✅ Register
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
+        
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register(RegisterRequestDto model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -57,19 +57,15 @@ namespace LibraryManagementAPI.Controllers
             });
         }
 
-        [Authorize]
-        // ✅ Login
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
+        
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(LoginRequestDto model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            // ✅ البحث عن المستخدم بالايميل
             var userFromDb = await _userManager.FindByEmailAsync(model.Email);
             if (userFromDb == null)
             {
-                ModelState.AddModelError("Email", "Invalid email or password");
                 return Unauthorized(new LoginResponseDto
                 {
                     Success = false,
@@ -77,11 +73,9 @@ namespace LibraryManagementAPI.Controllers
                 });
             }
 
-            // ✅ التحقق من كلمة السر
             var found = await _userManager.CheckPasswordAsync(userFromDb, model.Password);
             if (!found)
             {
-                ModelState.AddModelError("Password", "Invalid email or password");
                 return Unauthorized(new LoginResponseDto
                 {
                     Success = false,
@@ -89,37 +83,30 @@ namespace LibraryManagementAPI.Controllers
                 });
             }
 
-            // ✅ Claims
-            var userClaims = new List<Claim>
-    {
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        new Claim(ClaimTypes.NameIdentifier, userFromDb.Id),
-        new Claim(ClaimTypes.Name, userFromDb.UserName ?? ""),
-        new Claim(ClaimTypes.Email, userFromDb.Email ?? "")
-    };
+            var userClaim = new List<Claim>
+            {
+                new Claim (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim (ClaimTypes.NameIdentifier,userFromDb.Id),
+                new Claim (ClaimTypes.Name ,userFromDb.UserName ?? ""),
+                new Claim (ClaimTypes.Email,userFromDb.Email ?? "")
+            };
 
             var userRoles = await _userManager.GetRolesAsync(userFromDb);
             foreach (var role in userRoles)
             {
-                userClaims.Add(new Claim(ClaimTypes.Role, role));
+                userClaim.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            // ✅ مفتاح التوقيع
-            var signInKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration["Jwt:Key"]));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var signingCred = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var signingCred = new SigningCredentials(signInKey, SecurityAlgorithms.HmacSha256);
-
-            // ✅ بناء الـ Token
             var myToken = new JwtSecurityToken(
-                audience: _configuration["Jwt:Audience"],
-                issuer: _configuration["Jwt:Issuer"],
-                expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpireMinutes"])),
-                claims: userClaims,
-                signingCredentials: signingCred
-            );
+                audience: _config["Jwt:Audience"],
+                issuer: _config["Jwt:Issuer"],
+                expires: DateTime.Now.AddMinutes(Convert.ToDouble(_config["Jwt:ExpireMinutes"])),
+                claims: userClaim,
+                signingCredentials: signingCred);
 
-            // ✅ إخراج التوكن
             return Ok(new LoginResponseDto
             {
                 Success = true,
@@ -129,14 +116,14 @@ namespace LibraryManagementAPI.Controllers
             });
         }
 
+       
         [Authorize]
-        [HttpPost("change-password")]
+        [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // ✅ Get Current Logged-in User
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
                 return Unauthorized(new { Message = "User not found" });
@@ -144,7 +131,6 @@ namespace LibraryManagementAPI.Controllers
             if (model.NewPassword != model.ConfirmNewPassword)
                 return BadRequest(new { Message = "Passwords do not match" });
 
-            // ✅ Change password
             var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
 
             if (!result.Succeeded)
@@ -162,11 +148,9 @@ namespace LibraryManagementAPI.Controllers
                 Message = "Password changed successfully"
             });
         }
-        // ✅ Forgot Password (Generate Reset Token)
-        [Authorize]
 
+       
         [HttpPost("forgot-password")]
-
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -186,9 +170,8 @@ namespace LibraryManagementAPI.Controllers
                 ResetToken = token
             });
         }
-        [Authorize]
 
-        // ✅ Reset Password
+      
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto model)
         {

@@ -20,10 +20,11 @@ namespace LibraryManagementAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Register Repos
-            builder.Services.AddScoped<IBookRepo, BookRepo>();
-            builder.Services.AddScoped<IAuthorRepo, AuthorRepo>();
+            builder.Services.AddScoped<IWorkRepo<Book>, BookRepo>();
+            builder.Services.AddScoped<IWorkRepo<Author>, AuthorRepo>();
+            builder.Services.AddScoped<IWorkRepo<Category>, CategoryRepo>();
             builder.Services.AddScoped<IBorrowingRepo, BorrowingRepo>();
-            builder.Services.AddScoped<IPurchaseRepo, PurchaseRepo>();
+            builder.Services.AddScoped<IPurchaseRepo<Purchase>, PurchaseRepo>();
 
 
 

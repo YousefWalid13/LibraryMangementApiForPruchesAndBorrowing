@@ -10,42 +10,42 @@ namespace LibraryManagementAPI.Controllers
     [ApiController]
     public class BookController : ControllerBase
     {
-        private readonly IBookRepo _repo;
+        private readonly IWorkRepo<Book> _bookRepo;
 
-        public BookController(IBookRepo repo)
+        public BookController(IWorkRepo<Book> bookRepo)
         {
-            _repo = repo;
+            _bookRepo = bookRepo;
         }
-        [Authorize(Roles = "Admin , User")]
-        // ✅ GET: api/book?pageNumber=1&pageSize=10
-        [HttpGet]
-        public async Task<IActionResult> GetBooks(
-            int pageNumber = 1,
-            int pageSize = 10,
-            string sortBy = "id",
-            string sortOrder = "asc")
-        {
-            var books = await _repo.GetAllAsync(pageNumber, pageSize, sortBy, sortOrder);
 
-            var response = books.Select(b => new BookResponseDto
+        
+        [Authorize(Roles = "Admin,User")]
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var books = await _bookRepo.GetAllAsync();
+
+            var result = books.Select(b => new BookResponseDto
             {
                 Id = b.Id,
                 Title = b.Title,
                 ISBN = b.ISBN,
-                Price = b.Price
+                Price = b.Price,
+                PublishedDate = b.PublishedDate
             });
 
-            return Ok(response);
+            return Ok(result);
         }
-        [Authorize(Roles = "Admin , User")]
-        // ✅ GET: api/book/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetBook(int id)
-        {
-            var book = await _repo.GetByIdAsync(id);
-            if (book == null) return NotFound();
 
-            var response = new BookDetailsDto
+        
+        [Authorize(Roles = "Admin,User")]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var book = await _bookRepo.GetByIdAsync(id);
+            if (book == null)
+                return NotFound(new { Message = $"Book with Id = {id} not found." });
+
+            var result = new BookDetailsDto
             {
                 Id = book.Id,
                 Title = book.Title,
@@ -56,78 +56,84 @@ namespace LibraryManagementAPI.Controllers
                 AuthorName = book.Author?.Name ?? "N/A"
             };
 
-            return Ok(response);
+            return Ok(result);
         }
 
-        // ✅ POST: api/book
+      
         [Authorize(Roles = "Admin")]
         [HttpPost]
-
-        public async Task<IActionResult> AddBook([FromBody] BookRequestDto dto)
+        public async Task<IActionResult> Create([FromBody] BookRequestDto model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var book = new Book
             {
-                Title = dto.Title,
-                ISBN = dto.ISBN,
-                PublishedDate = dto.PublishedDate,
-                Price = dto.Price,
-                CopiesAvailable = dto.CopiesAvailable,
-                CategoryId = dto.CategoryId,
-                AuthorId = dto.AuthorId
+                Title = model.Title,
+                ISBN = model.ISBN,
+                PublishedDate = model.PublishedDate,
+                Price = model.Price,
+                CopiesAvailable = model.CopiesAvailable,
+                CategoryId = model.CategoryId,
+                AuthorId = model.AuthorId
             };
 
-            var newBook = await _repo.AddAsync(book);
+            var created = await _bookRepo.AddAsync(book);
 
             var response = new BookResponseDto
             {
-                Id = newBook.Id,
-                Title = newBook.Title,
-                ISBN = newBook.ISBN,
-                Price = newBook.Price
+                Id = created.Id,
+                Title = created.Title,
+                ISBN = created.ISBN,
+                Price = created.Price,
+                PublishedDate = created.PublishedDate
             };
 
-            return CreatedAtAction(nameof(GetBook), new { id = newBook.Id }, response);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, response);
         }
 
-        // ✅ PUT: api/book/5
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBook(int id, [FromBody] BookRequestDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] BookRequestDto dto)
         {
-            var existingBook = await _repo.GetByIdAsync(id);
-            if (existingBook == null) return NotFound();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            existingBook.Title = dto.Title;
-            existingBook.ISBN = dto.ISBN;
-            existingBook.PublishedDate = dto.PublishedDate;
-            existingBook.Price = dto.Price;
-            existingBook.CopiesAvailable = dto.CopiesAvailable;
-            existingBook.CategoryId = dto.CategoryId;
-            existingBook.AuthorId = dto.AuthorId;
+            var book = await _bookRepo.GetByIdAsync(id);
+            if (book == null)
+                return NotFound(new { Message = $"Book with Id = {id} not found." });
 
-            var updatedBook = await _repo.UpdateAsync(existingBook);
+            book.Title = dto.Title;
+            book.ISBN = dto.ISBN;
+            book.PublishedDate = dto.PublishedDate;
+            book.Price = dto.Price;
+            book.CopiesAvailable = dto.CopiesAvailable;
+            book.CategoryId = dto.CategoryId;
+            book.AuthorId = dto.AuthorId;
+
+            var updated = await _bookRepo.UpdateAsync(book,id);
 
             var response = new BookResponseDto
             {
-                Id = updatedBook.Id,
-                Title = updatedBook.Title,
-                ISBN = updatedBook.ISBN,
-                Price = updatedBook.Price
+                Id = updated.Id,
+                Title = updated.Title,
+                ISBN = updated.ISBN,
+                Price = updated.Price,
+                PublishedDate = updated.PublishedDate
             };
 
             return Ok(response);
         }
 
-        // ✅ DELETE: api/book/5
+        
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var result = await _repo.DeleteAsync(id);
-            if (!result) return NotFound();
+            var author = await _bookRepo.GetByIdAsync(id);
+            if (author == null)
+                return NotFound(new { Message = $"Author with Id = {id} not found." });
 
+            await _bookRepo.DeleteAsync(author, id);
             return NoContent();
         }
     }

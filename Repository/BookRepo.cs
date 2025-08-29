@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repository
 {
-    public class BookRepo : IBookRepo
+    public class BookRepo : IWorkRepo<Book>
     {
         private readonly AppDbContext _context;
 
@@ -13,46 +13,43 @@ namespace LibraryManagementAPI.Repository
             _context = appDbContext;
         }
 
-        // ✅ إضافة كتاب جديد
         public async Task<Book?> AddAsync(Book book)
         {
-            if (book == null) return null;
-
-            try
+            
+            if (book == null)
             {
-                await _context.Books.AddAsync(book);
-                await _context.SaveChangesAsync();
-                return book;
+                return null;
             }
-            catch (Exception ex)
-            {
-                // هنا ممكن تسجل الخطأ في logs
-                throw new Exception("Error while adding a new book.", ex);
-            }
+            await _context.Books.AddAsync(book);
+            await _context.SaveChangesAsync();
+            return book;
+            throw new NotImplementedException();
         }
 
-        // ✅ حذف كتاب
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<Book?> DeleteAsync(Book book , int id)
         {
             try
             {
-                var book = await _context.Books.FindAsync(id);
-                if (book == null) return false;
+               
+                 await _context.Books.FindAsync(id);
+                if (book == null) { return null; }
 
                 _context.Books.Remove(book);
+
                 await _context.SaveChangesAsync();
-                return true;
+
+                return null;
             }
             catch (Exception ex)
             {
-                // Logging
-                throw new Exception("Error while deleting the book.", ex);
+                throw new Exception("Error while deleting the category.", ex);
             }
         }
 
-        // ✅ إحضار كل الكتب مع Pagination + Sorting
-        public async Task<IEnumerable<Book>> GetAllAsync(int pageNumber, int pageSize, string? sortBy, string? sortOrder)
+        public async Task<IEnumerable<Book>> GetAllAsync()
+
         {
+            int pageNumber=0,  pageSize = 0; string? sortBy="",  sortOrder = "";
             if (pageNumber <= 0) pageNumber = 1;
             if (pageSize <= 0) pageSize = 10;
 
@@ -82,52 +79,48 @@ namespace LibraryManagementAPI.Repository
                 throw new Exception("Error while fetching books.", ex);
             }
         }
-        // ✅ إحضار كتاب واحد
+
+
         public async Task<Book?> GetByIdAsync(int id)
         {
             try
             {
                 return await _context.Books
-                                     .Include(b => b.Category)
-                                     .Include(b => b.Author)
+                                     .Include(c => c.Category) // التصنيف ومعاه كتبه
                                      .AsNoTracking()
-                                     .FirstOrDefaultAsync(b => b.Id == id);
+                                     .FirstOrDefaultAsync(c => c.Id == id);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error while fetching the book.", ex);
+                throw new Exception("Error while fetching the category.", ex);
             }
+
         }
 
-       
-
-        // ✅ تحديث كتاب
-        public async Task<Book?> UpdateAsync(Book book)
+        public async Task<Book?> GetByNameAsync(string name)
         {
-            if (book == null) return null;
-
             try
             {
-                var existingBook = await _context.Books.FindAsync(book.Id);
-                if (existingBook == null) return null;
-
-                // Update fields safely
-                existingBook.Title = book.Title;
-                existingBook.Description = book.Description;
-                existingBook.PublishedDate = book.PublishedDate;
-                existingBook.ISBN = book.ISBN;
-                existingBook.Price = book.Price;
-                existingBook.CopiesAvailable = book.CopiesAvailable;
-                existingBook.CategoryId = book.CategoryId;
-                existingBook.AuthorId = book.AuthorId;
-
-                await _context.SaveChangesAsync();
-                return existingBook;
+                return await _context.Books
+                                     .Include(c => c.Category) // التصنيف ومعاه كتبه
+                                     .AsNoTracking()
+                                     .FirstOrDefaultAsync(c => c.Title == name);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error while updating the book.", ex);
+                throw new Exception("Error while fetching the category.", ex);
             }
         }
+
+        public async Task<Book?> UpdateAsync(Book book , int id)
+        {
+            await _context.Books.FindAsync(id);
+            if (book == null) { return null; }
+            _context.Update(book);
+            await _context.SaveChangesAsync();
+            return book;
+
+        }
+
     }
 }

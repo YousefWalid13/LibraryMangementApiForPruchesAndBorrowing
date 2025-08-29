@@ -3,10 +3,10 @@ using LibraryManagementAPI.Models;
 
 namespace LibraryManagementAPI.Repository
 {
-    public interface IPurchaseRepo
+    public interface IPurchaseRepo<T>
     {
-        Task<Purchase?> PurchaseAsync(string userId, int bookId, decimal price);
-        Task<IEnumerable<Purchase>> GetUserPurchasesAsync(string userId);
+        Task<T?> PurchaseAsync(string userId, int bookId, decimal price);
+        Task<IEnumerable<T>> GetUserPurchasesAsync(string userId);
     }
 
 

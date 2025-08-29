@@ -16,7 +16,7 @@ namespace LibraryManagementAPI.Controllers
         {
             _borrowingRepo = borrowingRepo;
         }
-        [Authorize(Roles = "Admin , User")]
+      
         [HttpPost("{bookId}/borrow")]
         public async Task<IActionResult> BorrowBook(int bookId, string userId)
         {
@@ -24,7 +24,7 @@ namespace LibraryManagementAPI.Controllers
             if (!result) return BadRequest("Book not available or already borrowed.");
             return Ok("Book borrowed successfully.");
         }
-        [Authorize(Roles = "Admin , User" )]
+        
         [HttpPost("{bookId}/return")]
         public async Task<IActionResult> ReturnBook(int bookId, string userId)
         {
@@ -34,7 +34,7 @@ namespace LibraryManagementAPI.Controllers
         }
 
         [HttpGet("my")]
-        [Authorize(Roles ="Admin")]
+        [AllowAnonymous]
         public async Task<IActionResult> MyBorrowings(string userId)
         {
             var borrowings = await _borrowingRepo.GetUserBorrowingsAsync(userId);
